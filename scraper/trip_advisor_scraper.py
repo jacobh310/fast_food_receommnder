@@ -9,6 +9,7 @@ def get_page_links(num_pages):
     """"Returns the the links to all the pages in the trip advisor page"""
 
     link = 'https://www.tripadvisor.com/Restaurants-g32655-c10646-Los_Angeles_California.html'
+    # link = 'https://www.tripadvisor.com/Restaurants-g60750-c10646-San_Diego_California.html'
     html = requests.get(link)
     page = bs(html.text, 'lxml')
     page_links = []
@@ -59,7 +60,7 @@ def get_review_info(link):
         except:
             continue
 
-        if num_reviews >= 10:
+        if num_reviews >= 6:
 
             review = container.find("div", {"class": "ui_column is-9"})
             rating = review.span['class'][1].split('_')[1]
@@ -88,8 +89,8 @@ def get_review_info(link):
 
 
 
-def get_all_review_info():
-    links = get_restuarant_links(15)
+def get_all_review_info(num_pages):
+    links = get_restuarant_links(num_pages)
     df = pd.DataFrame()
     j = 1
     for link in links:   # loops through all the restaurants main pages
@@ -106,7 +107,8 @@ def get_all_review_info():
         for i in range(2, num_pages + 1):
 
             next_button = page.find("a", {"class": 'nav next ui_button primary'})
-            next_url = 'https://www.tripadvisor.com' + next_button['href']
+            try: next_url = 'https://www.tripadvisor.com' + next_button['href']
+            except: continue
             data = get_review_info(next_url)
             df = df.append(data, ignore_index=True)
             print(f'{j} review pages scrapped')
@@ -116,5 +118,5 @@ def get_all_review_info():
     return df
 
 if __name__ == "__main__":
-    df = get_all_review_info()
-    df.to_csv('restaurant.csv', index=False)
+    df = get_all_review_info(15)
+    df.to_csv('la_restaurant.csv', index=False)
