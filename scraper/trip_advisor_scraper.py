@@ -5,12 +5,11 @@ from selenium import webdriver
 import time
 
 
-def get_page_links(num_pages):
+def get_page_links(num_pages,url):
     """"Returns the the links to all the pages in the trip advisor page"""
 
-    link = 'https://www.tripadvisor.com/Restaurants-g32655-c10646-Los_Angeles_California.html'
-    # link = 'https://www.tripadvisor.com/Restaurants-g60750-c10646-San_Diego_California.html'
-    html = requests.get(link)
+
+    html = requests.get(url)
     page = bs(html.text, 'lxml')
     page_links = []
     for i in range(2, num_pages + 1):
@@ -20,13 +19,13 @@ def get_page_links(num_pages):
 
         next_link = requests.get(next_url)
         page = bs(next_link.text, 'lxml')
-    page_links.insert(0, link)
+    page_links.insert(0, url)
     return page_links
 
 
-def get_restuarant_links(num_pages):
-    """Returns all the links to restuarant pages in the specified number of pages"""
-    page_links = get_page_links(num_pages)
+def get_restuarant_links(num_pages,url):
+    """Returns all the links to restaurant pages in the specified number of pages"""
+    page_links = get_page_links(num_pages,url)
 
     rest_links = []
     for link in page_links:
@@ -60,7 +59,7 @@ def get_review_info(link):
         except:
             continue
 
-        if num_reviews >= 6:
+        if num_reviews >= 1:
 
             review = container.find("div", {"class": "ui_column is-9"})
             rating = review.span['class'][1].split('_')[1]
@@ -89,8 +88,8 @@ def get_review_info(link):
 
 
 
-def get_all_review_info(num_pages):
-    links = get_restuarant_links(num_pages)
+def get_all_review_info(num_pages,url):
+    links = get_restuarant_links(num_pages,url)
     df = pd.DataFrame()
     j = 1
     for link in links:   # loops through all the restaurants main pages
@@ -118,5 +117,13 @@ def get_all_review_info(num_pages):
     return df
 
 if __name__ == "__main__":
-    df = get_all_review_info(15)
-    df.to_csv('la_restaurant.csv', index=False)
+
+    # link = 'https://www.tripadvisor.com/Restaurants-g32655-c10646-Los_Angeles_California.html'
+    link = 'https://www.tripadvisor.com/Restaurants-g60750-c10646-San_Diego_California.html'
+    # link = 'https://www.tripadvisor.com/Restaurants-g60713-c10646-San_Francisco_California.html'
+    # link = 'https://www.tripadvisor.com/Restaurants-g60763-c10646-New_York_City_New_York.html'
+    # link = 'https://www.tripadvisor.com/Restaurants-g60898-c10646-Atlanta_Georgia.html'
+    # link = 'https://www.tripadvisor.com/Restaurants-g659482-c10646-Orange_County_California.html'
+
+    df = get_all_review_info(8,link)
+    df.to_csv('SD_restaurant_plus.csv', index=False)
